@@ -30,3 +30,8 @@
 *.exe
 *.out
 *.app
+
+# only match directories
+.cache/
+.vscode/
+build/
