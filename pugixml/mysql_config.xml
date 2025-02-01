@@ -1,0 +1,15 @@
+<?xml version="1.0"?>
+<mysql>
+	<server>
+		<host>localhost</host>
+		<port>3306</port>
+		<username>root</username>
+		<password>12345</password>
+		<database>test_db</database>
+	</server>
+	<options>
+		<auto_commit>true</auto_commit>
+		<chatset>utf8mb4</chatset>
+		<timeout>30</timeout>
+	</options>
+</mysql>

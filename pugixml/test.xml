@@ -1,0 +1,26 @@
+<project>
+
+    <name>test xml</name>
+    <version>1.0.0</version>
+    <description>This is a test project for testing pugixml</description>
+
+    <environment>
+        <OS>ArchLinux</OS>
+        <arch>x86_64</arch>
+        <compiler>g++</compiler>
+        <build_type>Debug</build_type>
+    </environment>
+    
+    <folder name="src">
+        <file type=".cpp">main.cpp</file>
+        <file type=".txt">CMakeLists.txt</file>
+        <file type=".xml">test.xml</file>
+        <!-- <file /> -->
+    </folder>
+
+    <folder name="include">
+        <file type=".h">pugixml.hpp</file>
+        <file type=".h">pugiconfig.hpp</file>
+    </folder>
+
+</project>
