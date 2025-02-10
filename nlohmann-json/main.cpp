@@ -25,6 +25,7 @@ void readJson() {
 		std::cout << "has Arch field:" << data.contains("Arch") << "\n";
 
 	} catch (std::exception &e) {
+		// 解析失败抛出异常
 		std::cout << e.what() << "\n";
 	}
 

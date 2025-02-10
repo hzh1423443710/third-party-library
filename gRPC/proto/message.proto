@@ -1,0 +1,20 @@
+syntax = "proto3";
+
+package message;
+
+// protoc --cpp_out=gen -I=proto ./proto/*.proto
+// protoc --grpc_out=gen --plugin=protoc-gen-grpc=`which grpc_cpp_plugin` -Iproto proto/example.proto
+
+service EmailVerifyService {
+    rpc  getEmailVerifyCode(EmailVerifyRequest) returns (EmailVerifyResponse);
+}
+
+message EmailVerifyRequest {
+    string email = 1;
+}
+
+message EmailVerifyResponse{
+    string status = 1;
+    string code = 2;
+    string error = 3;
+}
