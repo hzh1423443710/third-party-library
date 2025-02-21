@@ -9,6 +9,11 @@ TabWidth: 4
 IndentWidth: 4
 ColumnLimit: 100
 
+# 指针引用 对齐方式
+DerivePointerAlignment: false
+PointerAlignment: Left
+ReferenceAlignment: Left
+
 SortIncludes: false
 SortUsingDeclarations: false
 
