@@ -7,11 +7,11 @@
 
 using json = nlohmann::json;
 
-json g_j = {{"Arch", "x86_64"},
-			{"Build", "Debug"},
-			{"Compiler", "g++"},
-			{"cppStandard", "c++17"},
-			{"Server", {{"host", "localhost"}, {"port", 8080}}}};
+const json g_j = {{"Arch", "x86_64"},
+				  {"Build", "Debug"},
+				  {"Compiler", "g++"},
+				  {"cppStandard", "c++17"},
+				  {"Server", {{"host", "localhost"}, {"port", 8080}}}};
 
 void readJson() {
 	json data;
@@ -24,7 +24,7 @@ void readJson() {
 		std::cout << data << "\n";
 		std::cout << "has Arch field:" << data.contains("Arch") << "\n";
 
-	} catch (std::exception &e) {
+	} catch (std::exception& e) {
 		// 解析失败抛出异常
 		std::cout << e.what() << "\n";
 	}
@@ -40,7 +40,7 @@ void readJson() {
 	auto it = data.find("Server");
 	if (it != data.end()) {
 		if (it.value().is_object()) {
-			for (auto &[key, value] : it.value().items()) {
+			for (const auto& [key, value] : it.value().items()) {
 				if (value.is_number_unsigned())
 					std::cout << key << " : " << value.get<unsigned>() << "\n";
 				else
@@ -50,7 +50,7 @@ void readJson() {
 	}
 
 	// 2.2迭代整个json
-	for (auto &[key, value] : data.items()) {
+	for (const auto& [key, value] : data.items()) {
 		std::cout << key << " : " << value << "\n";
 	}
 	// for (auto it = data.begin(); it != data.end(); ++it) {
@@ -117,7 +117,7 @@ void writeJson() {
 	out << data.dump(4);
 }
 
-int main(int argc, char *argv[]) {
+int main(int argc, char* argv[]) {
 	// readJson();
 	writeJson();
 	return 0;
