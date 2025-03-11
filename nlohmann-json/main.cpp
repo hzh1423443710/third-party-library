@@ -7,68 +7,126 @@
 
 using json = nlohmann::json;
 
-const json g_j = {{"Arch", "x86_64"},
-				  {"Build", "Debug"},
-				  {"Compiler", "g++"},
-				  {"cppStandard", "c++17"},
-				  {"Server", {{"host", "localhost"}, {"port", 8080}}}};
+// 支持序列化的结构体
+struct Message {
+	std::string role;
+	std::string content;
+	// 支持序列化 内置了全局友元函数(to_json, from_json)
+	NLOHMANN_DEFINE_TYPE_INTRUSIVE(Message, role, content)
+};
 
-void readJson() {
-	json data;
-	// 1.from filestream
-	std::ifstream f("compile_commands.json");
-	try {
-		// f >> data;
-		data = json::parse(f);
-		std::cout << data.dump(4) << "\n";
-		std::cout << data << "\n";
-		std::cout << "has Arch field:" << data.contains("Arch") << "\n";
+/// @brief json 的构造方式
+void test_ways_to_json();
 
-	} catch (std::exception& e) {
-		// 解析失败抛出异常
-		std::cout << e.what() << "\n";
-	}
+/// @brief 解析 json 中的数据
+void testParseJson();
 
-	// 2.from string
-	data = json::parse(g_j.dump());
-	std::cout << data["Arch"] << "\n";
-	std::cout << data["Server"] << "\n";
-	std::cout << data["Server"]["host"].get<std::string>() << "\n";
-	std::cout << data["Server"]["host"] << "\n";
+/// @brief write json to file
+void writeJson();
 
-	// 2.1查找
-	auto it = data.find("Server");
-	if (it != data.end()) {
-		if (it.value().is_object()) {
-			for (const auto& [key, value] : it.value().items()) {
-				if (value.is_number_unsigned())
-					std::cout << key << " : " << value.get<unsigned>() << "\n";
-				else
-					std::cout << key << " : " << value.get<std::string>() << "\n";
-			}
-		}
-	}
+int main(int argc, char* argv[]) {
+	// test_ways_to_json();
+	testParseJson();
+	// writeJson();
 
-	// 2.2迭代整个json
-	for (const auto& [key, value] : data.items()) {
-		std::cout << key << " : " << value << "\n";
-	}
-	// for (auto it = data.begin(); it != data.end(); ++it) {
-	// 	std::cout << it.key() << " : " << it.value() << "\n";
-	// }
-
-	// 3.from string
-	data = json::parse(R"(
-                        {
-                            "happy": true,
-                            "pi": 3.141,
-                            "host": "localhost",
-                            "port": 8080
-                        }
-                        )");
+	return 0;
 }
 
-void writeJson() {
+inline void test_ways_to_json() {
+	// 1.构造 json 对象
+
+	// 1.1 构造 json object
+	json j1_1 = {{"name", "json"}};
+	json j1_2 = {{"name", "json"}, {"type", "array"}};
+
+	// 1.2 构造 json array
+	json j1_3 = {"name", "json", "type", "array"};
+
+	// 1.3 构造 嵌套对象
+	// clang-format off
+	json j1_4 = {
+		{"Compiler", "g++"},
+		{"cppStandard", "c++17"},	// 键值对
+		{"Server", 					// 嵌套对象
+			{
+				{"host", "localhost"}, 
+				{"port", 8080}
+			}
+		}
+	};
+	// clang-format on
+
+	// 2.string -> json
+	json j2 = R"(
+{
+	"Arch": "x86_64",
+	"Build": "Debug",
+	"Compiler": "g++",
+	"cppStandard": "c++17",
+	"Server": {
+		"host": "localhost",
+		"port": 8080
+	}
+}
+)";
+
+	// 3.文件流 -> json (pwd: build)
+	std::ifstream f("../.vscode/settings.json");
+	if (f) {
+		json j3;
+		f >> j3; // 3.1 流操作符 会置 file read ptr 为 eof
+		// j3 = json::parse(f); // 3.2 parse 失败抛出异常
+		std::cout << j3.dump(4) << "\n";
+	}
+
+	// 4.支持序列化的结构体
+	Message m;
+	m.role = "assistant";
+	m.content = "hello world!";
+
+	// 4.1 结构体 -> json
+	json j = m;
+	// 4.2 json -> 结构体
+	Message m2 = j.get<Message>(); // Message m2 = j;
+	std::cout << m2.role << " : " << m2.content << "\n";
+
+	// 5.构造 json 类型
+	json j5 = json::object(); // 空对象: {}
+	json j6 = json::array();  // 空数组: []
+	j6.push_back(Message{"role", "hello!"});
+	j6.push_back(Message{"system", "you are a helper!"});
+	std::cout << j6.dump(4) << "\n";
+}
+
+inline void testParseJson() {
+	// 1.格式错误 中文逗号
+	try {
+		json j = json::parse(R"( {"uid":1, "message":"你好啊"，"session_id":null})");
+
+	} catch (const std::exception& e) {
+		std::cerr << e.what() << "\n";
+	}
+
+	// 2.at, value, operator []
+	try {
+		json j = {
+			{"uid", 1},
+			{"message", "hello world"},
+			{"session_id", nullptr},
+		};
+		std::cout << j["status"] << "\n"; // null (operator [] 不存在会创建)
+		std::cout << j.dump(4) << "\n";
+
+		std::cout << j.value("not_exist", "default value") << "\n"; // 不存在使用默认值(不创建)
+		std::cout << j.dump(4) << "\n";
+
+		std::cout << j.at("not_exist") << "\n"; // at 不存在抛出异常
+	} catch (const std::exception& e) {
+		std::cerr << e.what() << "\n";
+	}
+}
+
+inline void writeJson() {
 	json data;
 	data["status"] = 200;
 	data["url"] = "http://localhost:8080";
@@ -86,12 +144,12 @@ void writeJson() {
 	data["emptyObj"] = json::object();
 	data["emptyObj"]["name"] = "json";
 
-	// not serialize
+	// 1.not serialize
 	std::string buf = data.dump(4);
 	std::vector<uint8_t> v(buf.begin(), buf.end());
-// json::parse(v.begin(), v.end());
+	// json::parse(v.begin(), v.end());
 
-// serialize to bson
+	// 2.serialize to bson
 #if 1
 	std::vector<uint8_t> v1 = json::to_bson(data);
 #else
@@ -101,24 +159,17 @@ void writeJson() {
 	std::cout << "Binary JSON size: " << v1.size() << ", MongoDB" << "\n";
 	// json::from_bson(v1.begin(), v1.end());
 
-	// serialize to ubjson
+	// 3.serialize to ubjson
 	std::vector<uint8_t> v3 = json::to_ubjson(data);
 	std::cout << "Universal Binary JSON size: " << v3.size() << ", json binary\n";
 	// json::from_ubjson(v3.begin(), v3.end());
 
-	// serialize to msgpack
+	// 4.serialize to msgpack
 	std::vector<uint8_t> v5 = json::to_msgpack(data);
 	std::cout << "MessagePack size: " << v5.size() << ", network\n";
 	// json::from_msgpack(v5.begin(), v5.end());
 
-	// ouput to filestream
+	// 5.ouput to filestream
 	std::ofstream out("output.json");
-	//   out << data;
-	out << data.dump(4);
-}
-
-int main(int argc, char* argv[]) {
-	// readJson();
-	writeJson();
-	return 0;
+	out << data; // out << data.dump(4);
 }
