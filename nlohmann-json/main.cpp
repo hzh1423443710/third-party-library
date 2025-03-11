@@ -100,8 +100,9 @@ inline void test_ways_to_json() {
 
 inline void testParseJson() {
 	// 1.格式错误 中文逗号
+	std::string data = R"( {"uid":1, "message":"你好啊"，"session_id":null})";
 	try {
-		json j = json::parse(R"( {"uid":1, "message":"你好啊"，"session_id":null})");
+		json j = json::parse(data);
 
 	} catch (const std::exception& e) {
 		std::cerr << e.what() << "\n";
@@ -124,6 +125,12 @@ inline void testParseJson() {
 	} catch (const std::exception& e) {
 		std::cerr << e.what() << "\n";
 	}
+
+	// 3. 无异常解析
+	if (!json::accept(data)) {
+		std::cout << "Invalid json format\n";
+	}
+	
 }
 
 inline void writeJson() {
